@@ -14,7 +14,7 @@ You will **not** receive this application’s source code in advance. Bring a la
 | Azure login (MFA device if required) | `az login` must work on your laptop |
 | An AI assistant you already use | Labs are prompt-driven |
 
-Cursor is **not** required. Use GitHub Copilot, Claude, Gemini, ChatGPT, Cursor, or another LLM you can access on the day.
+Use GitHub Copilot, Claude, Gemini, ChatGPT, Cursor, or another LLM you can access on the day.
 
 The instructor will tell you which Azure subscription (or sandbox) to use.
 
