@@ -30,6 +30,7 @@ Windows 10/11, macOS, or Linux. 16 GB RAM recommended.
 | Terraform | **1.6.x or newer** (minimum 1.3.0) | `terraform -version` |
 | Azure CLI | latest | `az version` |
 | kubectl | latest | `kubectl version --client` |
+| Docker | latest, **running** | `docker version` |
 | A code editor | any | VS Code, Cursor, JetBrains, Neovim, etc. |
 
 **AI assistant:** have **one** of Copilot, Claude, Gemini, ChatGPT, Cursor, or similar signed in and working.
@@ -44,17 +45,42 @@ winget install OpenJS.NodeJS.LTS
 winget install Hashicorp.Terraform
 winget install Microsoft.AzureCLI
 winget install Kubernetes.kubectl
+winget install Docker.DockerDesktop
 ```
 
-Restart the terminal after installs.
+Restart the PC after Docker Desktop install, then **start Docker Desktop** and wait until it says running. WSL 2 is required on Windows.
 
 ### macOS (Homebrew)
 
 ```bash
 brew install git node terraform azure-cli kubernetes-cli
+brew install --cask docker
 ```
 
-Restart the terminal after installs.
+Open **Docker Desktop** once after install and wait until the engine is running.
+
+### Linux
+
+Install Git, Node 20, Terraform, Azure CLI, and kubectl with your distro packages or the official installers.
+
+Install **Docker Engine** (not only the CLI). Follow [Docker’s Linux install](https://docs.docker.com/engine/install/), add your user to the `docker` group, then log out and back in.
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+`docker version` must work **without** sudo. Podman is not a substitute unless `docker` already works the same way.
+
+## Docker smoke test
+
+Docker must be **running** before the workshop (Windows/Mac: Docker Desktop open; Linux: Docker Engine started).
+
+```bash
+docker version
+docker run --rm hello-world
+```
+
+Both commands must succeed.
 
 ## Azure login
 
@@ -118,6 +144,10 @@ Cluster credentials are **not** required before the workshop. Install the CLI on
 - [ ] **Your own Azure subscription** (instructor will not provide one)
 - [ ] `az login` works against that subscription and you can list resource groups
 - [ ] kubectl client installed
+- [ ] Docker installed and running (`docker version` and `docker run --rm hello-world` succeed)
+- [ ] Windows: **Docker Desktop** (not only the CLI)
+- [ ] macOS: **Docker Desktop**
+- [ ] Linux: **Docker Engine**
 - [ ] A code editor
 - [ ] **One** working AI assistant (Copilot, Claude, Gemini, ChatGPT, Cursor, etc.)
 - [ ] Laptop charger
@@ -125,7 +155,7 @@ Cluster credentials are **not** required before the workshop. Install the CLI on
 
 ## What we will not do for you on the day
 
-- Install Node, Terraform, Azure CLI, Git, or kubectl
+- Install Node, Terraform, Azure CLI, Git, kubectl, or Docker
 - Provide an Azure subscription
 - Complete Azure login / MFA
 - Set up your AI assistant account
