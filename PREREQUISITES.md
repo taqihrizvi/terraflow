@@ -1,40 +1,26 @@
 # Workshop prerequisites
 
-Complete this **before** the workshop. Day 1 starts with Terraform and AI prompts. There is no time to install tools during the session.
+Complete this **before** the workshop. Day 1 starts immediately. There is no time to install tools during the session.
 
 This workshop is for experienced DevOps engineers. We do not teach basic Azure, Terraform, Git, or JavaScript.
 
-## What you will build
+You will **not** receive this application’s source code in advance. Bring a laptop with the tools below installed and working. You will generate Terraform, React, and Node.js during the labs using AI prompts.
 
-A self-service portal:
-
-```
-React (localhost:3000) → Node API (localhost:3001) → Terraform (main/) → Azure
-```
-
-It creates a resource group, VNet, Windows VM, and DNS record.
-
-## Accounts (must have access)
+## Accounts
 
 | Account | Why |
 |---|---|
-| GitHub (or the repo host the instructor names) | Clone this repository |
-| Microsoft Azure subscription | `terraform plan` / `apply` |
-| Cursor | AI-assisted coding during the labs |
-| Azure CLI login that can create RG, VNet, VM, DNS in the workshop subscription | Local Terraform on Day 1 |
+| Microsoft Azure subscription | Create resource groups, VNets, VMs, and DNS |
+| Azure login (MFA device if required) | `az login` must work on your laptop |
+| An AI assistant you already use | Labs are prompt-driven |
 
-The instructor will give you:
+Cursor is **not** required. Use GitHub Copilot, Claude, Gemini, ChatGPT, Cursor, or another LLM you can access on the day.
 
-- Git repo URL and branch
-- Azure subscription ID
-- Whether you use the shared AKS namespace `terraflow-dev` on Day 2, or local Terraform only
-- Storage account / file share names if you run the portal against shared state
-
-Do **not** commit `.env` files or `k8s/k8s-secrets.yaml`. Copy the example files only.
+The instructor will tell you which Azure subscription (or sandbox) to use.
 
 ## Software to install
 
-Use **Windows 10/11**, macOS, or Linux. 16 GB RAM recommended.
+Windows 10/11, macOS, or Linux. 16 GB RAM recommended.
 
 | Tool | Version | Check |
 |---|---|---|
@@ -44,9 +30,11 @@ Use **Windows 10/11**, macOS, or Linux. 16 GB RAM recommended.
 | Terraform | **1.6.x or newer** (minimum 1.3.0) | `terraform -version` |
 | Azure CLI | latest | `az version` |
 | kubectl | latest | `kubectl version --client` |
-| Cursor | latest | Open Cursor and sign in |
+| A code editor | any | VS Code, Cursor, JetBrains, Neovim, etc. |
 
-Optional but useful: Windows Terminal, VS Code.
+**AI assistant:** have **one** of Copilot, Claude, Gemini, ChatGPT, Cursor, or similar signed in and working.
+
+Optional: Windows Terminal.
 
 ### Windows (winget)
 
@@ -58,7 +46,7 @@ winget install Microsoft.AzureCLI
 winget install Kubernetes.kubectl
 ```
 
-Install [Cursor](https://cursor.com) from the website. Restart the terminal after installs.
+Restart the terminal after installs.
 
 ### macOS (Homebrew)
 
@@ -66,159 +54,80 @@ Install [Cursor](https://cursor.com) from the website. Restart the terminal afte
 brew install git node terraform azure-cli kubernetes-cli
 ```
 
-Then install Cursor from the website.
+Restart the terminal after installs.
 
-## Clone and install the repo
-
-```bash
-git clone <REPO_URL>
-cd terraflow
-
-cd terraflow-backend
-npm install
-cd ../terraflow-frontend
-npm install
-```
-
-`npm install` must finish with **no errors**. If it fails at home, fix it before the workshop (VPN, Node version, permissions).
-
-## Environment files (no secrets in Git)
-
-### Backend
-
-```bash
-cd terraflow-backend
-cp example.env .env
-```
-
-Edit `.env`. For laptop-only Day 1 you still need Azure login; storage keys are only required when the API talks to Azure Files / Table Storage.
-
-Minimum for local API later:
-
-- `PORT=3001`
-- `CORS_ORIGIN=http://localhost:3000`
-- `K8S_NAMESPACE=terraflow-dev` (Day 2 jobs)
-- `AZURE_*` values the instructor provides
-
-### Frontend
-
-```bash
-cd terraflow-frontend
-cp example.env .env.development
-```
-
-Keep:
-
-```env
-VITE_API_BASE_URL=http://localhost:3001
-VITE_DISABLE_AUTH=true
-```
-
-Leave OIDC fields as placeholders unless the instructor enables login.
-
-### Kubernetes secrets (Day 2)
-
-```bash
-cd terraflow-backend/k8s
-cp secret-example.yaml k8s-secrets.yaml
-```
-
-Fill placeholders **only if** you will create Jobs in the cluster. Do not commit `k8s-secrets.yaml`.
-
-## Azure login (Day 1)
+## Azure login
 
 ```bash
 az login
 az account show
-az account set --subscription "<WORKSHOP_SUBSCRIPTION_ID>"
-```
-
-Confirm you can list resource groups:
-
-```bash
+az account set --subscription "<YOUR_SUBSCRIPTION_ID>"
 az group list -o table
 ```
 
-## Terraform smoke test (Day 1)
+You must be able to create resources in that subscription (resource group, VNet, VM, public IP, NSG, DNS zone). If you cannot, fix access before the workshop.
 
-From `main/`:
+## Terraform smoke test
 
-```bash
-cd main
-terraform version   # >= 1.3.0
-terraform init
-terraform fmt -check
-terraform validate
-```
-
-`init` must download the `azurerm` and `random` providers. Do not `apply` until the instructor says so.
-
-If `terraform.tfvars` still has `YOUR_SUBSCRIPTION_ID`, replace it with your workshop subscription ID **locally**. That file may stay untracked; do not put real secrets in Git.
-
-## Kubernetes (Day 2 only)
-
-You need a kubeconfig that can reach the workshop AKS and namespace **`terraflow-dev`**.
+In an empty folder:
 
 ```bash
-kubectl config current-context
-kubectl get ns terraflow-dev
-kubectl get sa terraform-runner -n terraflow-dev
+terraform version
 ```
 
-If those fail, you can still do Day 1 (local Terraform). The instructor will issue kubeconfig or `az aks get-credentials` steps on the day.
+Must report **1.3.0 or newer** (1.6.x preferred). You do not need a project cloned. Provider download happens in the lab with `terraform init`.
 
-## Start the portal (verify before the workshop)
-
-Two terminals:
+## Node smoke test
 
 ```bash
-# Terminal 1
-cd terraflow-backend
-npm run dev
+node -v    # v20 or higher
+npm -v     # 10 or higher
 ```
 
-http://localhost:3001/api/health should return `{ "status": "ok", ... }`  
-Swagger: http://localhost:3001/docs
+Create a throwaway folder and confirm npm works:
 
 ```bash
-# Terminal 2
-cd terraflow-frontend
-npm run dev
+mkdir ws-npm-check
+cd ws-npm-check
+npm init -y
 ```
 
-http://localhost:3000 should open the dashboard. With `VITE_DISABLE_AUTH=true` you should not be forced through login.
+Delete that folder afterward. Corporate proxy/VPN must allow **registry.npmjs.org** and **registry.terraform.io**.
 
-You do **not** need to deploy the frontend/backend to Kubernetes to do the labs. Local UI + API is enough. Terraform Jobs in AKS are a Day 2 option when the cluster and secrets are ready.
+## kubectl
 
-## Ports that must be free
+```bash
+kubectl version --client
+```
 
-| Port | App |
+Cluster credentials are **not** required before the workshop. Install the CLI only.
+
+## Ports that should be free on the day
+
+| Port | Used for |
 |---|---|
-| 3000 | React |
-| 3001 | Node API |
+| 3000 | React app you will generate |
+| 3001 | Node API you will generate |
 
 ## Pre-workshop checklist
-
-Print this or tick it in a note:
 
 - [ ] Git installed
 - [ ] Node 20+ and npm 10+
 - [ ] Terraform 1.6+ (`terraform -version`)
-- [ ] Azure CLI installed and `az login` works
-- [ ] kubectl installed
-- [ ] Cursor installed and signed in
-- [ ] Repo cloned
-- [ ] `npm install` succeeded in `terraflow-backend` and `terraflow-frontend`
-- [ ] `example.env` copied to `.env` / `.env.development` (not committed)
-- [ ] `terraform init` and `terraform validate` succeed in `main/`
-- [ ] Backend `npm run dev` serves `/api/health`
-- [ ] Frontend `npm run dev` opens on port 3000
-- [ ] Laptop charger, and you can reach public npm and HashiCorp registry (or your corporate proxy is already configured)
+- [ ] Azure CLI installed
+- [ ] `az login` works and you can list resource groups
+- [ ] kubectl client installed
+- [ ] A code editor
+- [ ] **One** working AI assistant (Copilot, Claude, Gemini, ChatGPT, Cursor, etc.)
+- [ ] Laptop charger
+- [ ] Network can reach npm and the Terraform registry (or your proxy is already set)
 
-## What we will not install for you on the day
+## What we will not do for you on the day
 
-- Node, Terraform, Azure CLI, Git, Cursor
-- npm packages (run `npm install` at home)
-- Azure login / MFA device
+- Install Node, Terraform, Azure CLI, Git, or kubectl
+- Complete Azure login / MFA
+- Set up your AI assistant account
 
-If any check above fails, fix it before the workshop or message the instructor with the **exact command and error**.
+Do **not** expect a copy of the instructor portal codebase. You will build your own Terraform modules and portal during the two days.
+
+If a check fails, fix it before the workshop or send the instructor the **exact command and error**.
