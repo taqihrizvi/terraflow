@@ -10,13 +10,13 @@ You will **not** receive this application’s source code in advance. Bring a la
 
 | Account | Why |
 |---|---|
-| Microsoft Azure subscription | Create resource groups, VNets, VMs, and DNS |
+| **Your own** Microsoft Azure subscription | The instructor will **not** provide a subscription. You must bring one you can deploy into. |
 | Azure login (MFA device if required) | `az login` must work on your laptop |
 | An AI assistant you already use | Labs are prompt-driven |
 
-Use GitHub Copilot, Claude, Gemini, ChatGPT, Cursor, or another LLM you can access on the day.
+Cursor is **not** required. Use GitHub Copilot, Claude, Gemini, ChatGPT, Cursor, or another LLM you can access on the day.
 
-The instructor will tell you which Azure subscription (or sandbox) to use.
+You need **Contributor** (or equivalent) rights in **your** subscription to create a resource group, VNet, subnet, public IP, NSG, Windows VM, and DNS zone. Pay-as-you-go, MSDN, or a company sub you are allowed to use are all fine. A sandbox the instructor runs is **not** part of this workshop.
 
 ## Software to install
 
@@ -65,7 +65,7 @@ az account set --subscription "<YOUR_SUBSCRIPTION_ID>"
 az group list -o table
 ```
 
-You must be able to create resources in that subscription (resource group, VNet, VM, public IP, NSG, DNS zone). If you cannot, fix access before the workshop.
+You must be able to create resources in **your** subscription (resource group, VNet, VM, public IP, NSG, DNS zone). The instructor will not issue a subscription or guest access. If you cannot deploy, fix it before the workshop.
 
 ## Terraform smoke test
 
@@ -115,7 +115,8 @@ Cluster credentials are **not** required before the workshop. Install the CLI on
 - [ ] Node 20+ and npm 10+
 - [ ] Terraform 1.6+ (`terraform -version`)
 - [ ] Azure CLI installed
-- [ ] `az login` works and you can list resource groups
+- [ ] **Your own Azure subscription** (instructor will not provide one)
+- [ ] `az login` works against that subscription and you can list resource groups
 - [ ] kubectl client installed
 - [ ] A code editor
 - [ ] **One** working AI assistant (Copilot, Claude, Gemini, ChatGPT, Cursor, etc.)
@@ -125,6 +126,7 @@ Cluster credentials are **not** required before the workshop. Install the CLI on
 ## What we will not do for you on the day
 
 - Install Node, Terraform, Azure CLI, Git, or kubectl
+- Provide an Azure subscription
 - Complete Azure login / MFA
 - Set up your AI assistant account
 
