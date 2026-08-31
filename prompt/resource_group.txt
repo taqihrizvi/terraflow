@@ -1,0 +1,32 @@
+Create a Terraform child module at modules/resource_group with exactly these files: main.tf, variables.tf, outputs.tf.
+
+Do not add descriptions, defaults, validation, README, or versions.tf.
+Keep variables on one line each in this compact style:
+  variable "name" { type = string }
+
+variables.tf:
+- name (string)
+- location (string)
+- tags (map(string))
+
+main.tf:
+- Resource: azurerm_resource_group
+- Terraform name: customer_rg
+- Azure name: var.name  (value the user types when Terraform asks for resource_group_name; do not add a prefix)
+- location = var.location
+- tags = var.tags
+
+outputs.tf:
+- output "name" = azurerm_resource_group.customer_rg.name
+- no description
+
+Do not create extra resources.
+
+VALIDATION
+- Files exist: modules/resource_group/main.tf, variables.tf, outputs.tf only
+- From repo root of the Terraform project: terraform fmt -check && terraform validate
+- Resource is azurerm_resource_group.customer_rg with name = var.name (no prefix)
+- Variables are only name, location, tags — no defaults or descriptions
+- Output name equals azurerm_resource_group.customer_rg.name
+- Fail if extra resources, README, or versions.tf were added
+

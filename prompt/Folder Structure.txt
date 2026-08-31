@@ -1,0 +1,46 @@
+Create the empty Terraflow Terraform folder structure only. Do not write any Terraform resource logic, providers, variables, outputs, or README files.
+Create this exact tree. Every listed file must exist and be empty (0 bytes or a single blank line). Do not add extra files or folders.
+Terraform/
+└── main/
+    ├── main.tf
+    ├── variables.tf
+    ├── locals.tf
+    ├── outputs.tf
+    ├── providers.tf
+    ├── terraform.tfvars
+    └── modules/
+        ├── resource_group/
+        │   ├── main.tf
+        │   ├── variables.tf
+        │   └── outputs.tf
+        ├── security/
+        │   ├── main.tf
+        │   ├── variables.tf
+        │   └── outputs.tf
+        ├── networking/
+        │   ├── main.tf
+        │   ├── variables.tf
+        │   └── outputs.tf
+        ├── compute/
+        │   ├── main.tf
+        │   ├── variables.tf
+        │   └── outputs.tf
+        └── dns/
+            ├── main.tf
+            ├── variable.tf
+            └── output.tf
+Rules:
+- Work from the repo root. The Terraform project root is Terraform/main/.
+- Each child module gets exactly three files.
+- resource_group, security, networking, compute use variables.tf and outputs.tf (plural).
+- dns uses variable.tf and output.tf (singular). This is required.
+- Do not create versions.tf, README.md, .terraform/, or terraform.lock.hcl.
+- Do not create modules for SQL, monitoring, logins, or users.
+- Do not implement azurerm resources, providers, or module blocks. Files stay empty.
+- Do not add descriptions, comments, or placeholder resource stubs.
+VALIDATION
+- Tree matches the layout above with no extra files
+- modules/dns/variable.tf and modules/dns/output.tf exist (singular names)
+- modules/dns/variables.tf and modules/dns/outputs.tf do NOT exist
+- All listed .tf files exist and contain no resources, modules, or providers
+- Fail if README, versions.tf, SQL/monitoring modules, or any Terraform logic were added

@@ -1,0 +1,67 @@
+Create a Terraform child module at modules/networking with exactly these files: main.tf, variables.tf, outputs.tf.
+
+Do not add descriptions, defaults, validation, README, or versions.tf.
+Keep variables on one line each in this compact style:
+  variable "name" { type = string }
+
+variables.tf:
+- name_prefix (string)
+- location (string)
+- resource_group (string)
+- tags (map(string))
+- nsg_id (string)
+
+main.tf resources, in this order:
+
+1) azurerm_virtual_network.vnet
+   - name = var.name_prefix  (same as the VM name; do not append -vnet)
+   - location = var.location
+   - resource_group_name = var.resource_group
+   - address_space = ["10.0.0.0/16"]  (hardcoded, not a variable)
+   - tags = var.tags
+
+2) azurerm_subnet.subnet
+   - name = ${var.name_prefix}-snet
+   - resource_group_name = var.resource_group
+   - virtual_network_name = azurerm_virtual_network.vnet.name
+   - address_prefixes = ["10.0.1.0/24"]  (hardcoded, not a variable)
+   - no NSG on the subnet
+
+3) azurerm_public_ip.public_ip
+   - name = ${var.name_prefix}-pip
+   - location = var.location
+   - resource_group_name = var.resource_group
+   - allocation_method = "Static"
+   - sku = "Standard"
+   - tags = var.tags
+
+4) azurerm_network_interface.nic
+   - name = ${var.name_prefix}-nic
+   - location = var.location
+   - resource_group_name = var.resource_group
+   - tags = var.tags
+   - ip_configuration:
+     - name = "internal"
+     - subnet_id = azurerm_subnet.subnet.id
+     - private_ip_address_allocation = "Dynamic"
+     - public_ip_address_id = azurerm_public_ip.public_ip.id
+
+5) azurerm_network_interface_security_group_association.nsg_association
+   - network_interface_id = azurerm_network_interface.nic.id
+   - network_security_group_id = var.nsg_id
+
+outputs.tf:
+- nic_id = azurerm_network_interface.nic.id
+- public_ip = azurerm_public_ip.public_ip.ip_address
+- no descriptions, no vnet_id/subnet_id outputs
+
+Do not add extra subnets, NAT, or Bastion.
+
+VALIDATION
+- Files exist: modules/networking/main.tf, variables.tf, outputs.tf only
+- terraform fmt -check && terraform validate
+- VNet Azure name equals var.name_prefix (same as the VM name, no -vnet suffix); address space 10.0.0.0/16 and subnet 10.0.1.0/24 are hardcoded
+- Exactly five resources: vnet, subnet, public_ip (Static Standard), nic, nsg_association
+- Outputs only nic_id and public_ip
+- Fail if extra subnets, NAT, Bastion, or NSG attached on the subnet
+

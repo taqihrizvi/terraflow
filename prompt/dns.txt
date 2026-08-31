@@ -1,0 +1,41 @@
+Create a Terraform child module at modules/dns with exactly these files: main.tf, variable.tf, output.tf.
+
+Important: file names are variable.tf and output.tf (singular), not variables.tf / outputs.tf.
+
+Do not add descriptions, defaults, validation, README, or versions.tf.
+Keep variables on one line each:
+  variable "dns_name" { type = string }
+  variable "dns_zone_name" { type = string }
+  variable "resource_group_name" { type = string }
+  variable "public_ip" { type = string }
+  variable "tags" { type = map(string) }
+
+main.tf:
+- Resource 1: azurerm_dns_zone
+  - Terraform name: zone
+  - name = var.dns_zone_name
+  - resource_group_name = var.resource_group_name
+  - tags = var.tags
+- Resource 2: azurerm_dns_a_record
+  - Terraform name: vm_dns
+  - name = var.dns_name  (hostname label only, e.g. app01, NOT app01.fusion.crbc.live)
+  - zone_name = azurerm_dns_zone.zone.name
+  - resource_group_name = var.resource_group_name
+  - ttl = 3600
+  - records = [var.public_ip]
+
+output.tf:
+- dns_record_name = azurerm_dns_a_record.vm_dns.name
+- dns_record_ip = azurerm_dns_a_record.vm_dns.records
+- name_servers = azurerm_dns_zone.zone.name_servers
+- no descriptions
+
+VALIDATION
+- Files exist: modules/dns/main.tf, variable.tf, output.tf (singular names)
+- terraform fmt -check && terraform validate
+- azurerm_dns_zone.zone name = var.dns_zone_name
+- azurerm_dns_a_record.vm_dns name = var.dns_name (hostname only), ttl 3600, records = [var.public_ip]
+- Zone name is passed in as var.dns_zone_name from root local "fusion.crbc.live"
+- Outputs: dns_record_name, dns_record_ip, name_servers
+- Fail if files were named variables.tf / outputs.tf or dns_name is treated as a full FQDN
+

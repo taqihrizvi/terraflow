@@ -1,0 +1,54 @@
+Create a Terraform child module at modules/compute with exactly these files: main.tf, variables.tf, outputs.tf.
+
+Do not add descriptions, defaults, validation, README, or versions.tf.
+Keep variables on one line each in this compact style:
+  variable "name" { type = string }
+
+variables.tf:
+- vm_name (string)
+- location (string)
+- resource_group (string)
+- vm_size (string)
+- admin_username (string)
+- admin_password (string)  — do NOT mark sensitive
+- nic_id (string)
+- tags (map(string))
+
+main.tf:
+- Resource: azurerm_windows_virtual_machine
+- Terraform name: vm
+- name = var.vm_name  (user-entered VM name; VNet and NSG in other modules use this same value as name_prefix)
+- location = var.location
+- resource_group_name = var.resource_group
+- size = var.vm_size
+- admin_username = var.admin_username
+- admin_password = var.admin_password
+- network_interface_ids = [var.nic_id]
+- tags = var.tags
+- os_disk:
+  - name = "${var.vm_name}-osdisk"
+  - caching = "ReadWrite"
+  - storage_account_type = "Premium_LRS"
+  - disk_size_gb = 127
+- source_image_reference (not source_image_id):
+  - publisher = "MicrosoftWindowsServer"
+  - offer = "WindowsServer"
+  - sku = "2019-Datacenter"
+  - version = "latest"
+- do not set identity, boot diagnostics, zone, or patch_mode
+
+outputs.tf:
+- output "vm_id" = azurerm_windows_virtual_machine.vm.id
+- no description
+
+Do not add extra disks or extensions.
+
+VALIDATION
+- Files exist: modules/compute/main.tf, variables.tf, outputs.tf only
+- terraform fmt -check && terraform validate
+- Resource is azurerm_windows_virtual_machine.vm named var.vm_name using source_image_reference Windows Server 2019-Datacenter
+- os_disk Premium_LRS 127 GB named ${var.vm_name}-osdisk
+- admin_password variable is not marked sensitive
+- Only output is vm_id
+- Fail if identity, boot diagnostics, extra disks, or extensions were added
+

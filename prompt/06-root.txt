@@ -1,0 +1,52 @@
+Create the Terraform root next to modules/: main.tf, variables.tf, locals.tf, outputs.tf, providers.tf, terraform.tfvars.
+
+Do not hardcode resource group name, VM name, or DNS hostname.
+
+variables.tf — required, no defaults (Terraform must ASK for these on plan/apply):
+- resource_group_name (string) — "Name of the Azure resource group to create"
+- vm_name (string) — "Name of the Windows VM (max 15 characters). VNet and NSG use this same name."
+- dns_name (string) — "DNS hostname (A record) only, not the FQDN"
+
+variables.tf — with defaults (do not prompt):
+- subscription_id (string) — no default in the variable; set only in terraform.tfvars
+- environment (string) default "dev"
+- location (string) default "UK South"
+- vm_size (string) default "Standard_B2als_v2"
+- admin_username (string) default "azureadmin"
+
+terraform.tfvars:
+- ONLY subscription_id = "YOUR_SUBSCRIPTION_ID"
+- Do NOT set resource_group_name, vm_name, or dns_name here
+
+locals.tf:
+- name_prefix = lower(replace(var.vm_name, " ", "-"))
+- dns_zone_name = "fusion.crbc.live"  (fixed, not a form field)
+- common_tags Environment = var.environment, ManagedBy = "Terraform"
+
+Naming rules:
+- Resource group Azure name = var.resource_group_name (user input)
+- VM Azure name = var.vm_name (user input)
+- VNet Azure name = local.name_prefix (same as VM name, no -vnet)
+- NSG Azure name = local.name_prefix (same as VM name, no -nsg)
+- Subnet / PIP / NIC may still use -snet / -pip / -nic suffixes
+- DNS A record = var.dns_name (hostname only)
+- FQDN = {dns_name}.fusion.crbc.live
+
+main.tf module wiring:
+- resource_group.name = var.resource_group_name
+- security.name_prefix = local.name_prefix
+- networking.name_prefix = local.name_prefix
+- compute.vm_name = var.vm_name
+- dns.dns_name = var.dns_name
+- dns.dns_zone_name = local.dns_zone_name
+- dns.public_ip = module.networking.public_ip
+
+outputs.tf include resource_group_name, vm_name, public_ip, dns_name, dns_zone_name, vm_fqdn = "${var.dns_name}.${local.dns_zone_name}", admin_username, admin_password (sensitive), dns_zone_name_servers.
+
+VALIDATION
+- terraform plan with no extra -var flags prompts for resource_group_name, vm_name, and dns_name
+- terraform.tfvars does not contain those three names
+- After entering VM name app01, planned VNet and NSG names are app01 (not app01-vnet / app01-nsg)
+- Planned DNS FQDN is {dns_name}.fusion.crbc.live
+- terraform fmt -check && terraform validate
+- Fail if RG/VM/DNS names are hardcoded or VNet/NSG still use -vnet / -nsg suffixes
