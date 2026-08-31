@@ -1,0 +1,57 @@
+Create a Terraform child module at modules/security with exactly these files: main.tf, variables.tf, outputs.tf.
+
+Do not add descriptions (except the sensitive flag on the password output), defaults, validation, README, or versions.tf.
+Keep variables on one line each in this compact style:
+  variable "name" { type = string }
+
+variables.tf:
+- name_prefix (string)
+- location (string)
+- resource_group (string)
+- tags (map(string))
+
+main.tf resource 1: azurerm_network_security_group
+- Terraform name: nsg
+- Azure name: var.name_prefix  (same as the VM name; do not append -nsg)
+- location = var.location
+- resource_group_name = var.resource_group
+- tags = var.tags
+- One inline security_rule (not a separate azurerm_network_security_rule):
+  - name = "Allow_RDP"
+  - priority = 300
+  - direction = "Inbound"
+  - access = "Allow"
+  - protocol = "Tcp"
+  - source_port_range = "*"
+  - destination_port_range = "3389"
+  - source_address_prefix = "*"
+  - destination_address_prefix = "*"
+
+main.tf resource 2: random_password
+- Terraform name: admin_password
+- length = 20
+- special = true
+- override_special = "!@#$%"
+- upper = true
+- lower = true
+- numeric = true
+- min_upper = 1
+- min_lower = 1
+- min_numeric = 1
+- min_special = 1
+
+outputs.tf:
+- nsg_id = azurerm_network_security_group.nsg.id
+- admin_password = random_password.admin_password.result, sensitive = true
+- no descriptions
+
+Do not add extra NSG rules, Key Vault, or subnet association.
+
+VALIDATION
+- Files exist: modules/security/main.tf, variables.tf, outputs.tf only
+- terraform fmt -check && terraform validate
+- NSG Azure name equals var.name_prefix (same as the VM name, no -nsg suffix) with exactly one inline Allow_RDP rule (3389, priority 300, source *)
+- random_password.admin_password length 20 with the special/min settings above
+- Outputs: nsg_id and admin_password (sensitive = true only)
+- Fail if extra rules, Key Vault, or subnet association exist
+
